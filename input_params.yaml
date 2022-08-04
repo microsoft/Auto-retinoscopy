@@ -1,0 +1,60 @@
+input:
+  directory_path: './input'
+  load_images_from_video: True
+  load_init_bbox_from_file: True
+  init_bbox_file: 'init_bbox.csv'
+
+output_path:
+  original_frames: 'images/original_frames'
+  tracking_frames: 'images/tracking_results'
+  raw_warped_frames: 'images/raw_warped'
+  eyes_frames: 'images/eyes'
+  beam_frames: 'images/beam'
+  glasses_frames: 'images/glasses'
+  selected_frame: 'images/selected_frames'
+  numpy_path: 'numpy'
+
+output:
+  directory_path: './output'
+  save_original_frames: False
+  save_tracking_frames: True
+  run_glasses_detection: True
+  run_beam_segmentation: True
+  run_reflex_segmentation: True
+  save_numpy_output: True
+  power_prediction: True
+
+start_frame_index: 0
+end_frame_index: -1
+scaling_factor: 1
+
+eyes:
+  scaling_factor: 4
+  pupillary_margin: 10
+  pupil_hough_param2_max_value: 50
+  pupil_hough_param2_min_value: 20
+  pupil_min_radius: 10
+  pupil_max_radius: 35
+  averaging_window: 4
+  histogram_bar_size: 6
+  pupil_pass_separator: 20
+  median_pupil_radius_margin: 0.3
+  reflex_vertical_column_percent: 0.4
+
+glasses:
+  square_tolerance: 0.15
+  fiducials_min_area: 100
+  fiducials_extent: 0.75
+  fiducials_aspect: 1.5
+  fiducials_side: 4
+  fiducials_distance_tolerance: 0.2
+  number_of_fids: 5
+  fiducial_real_size_cm: 0.5
+  fid_centers_right_curr_2: [[71.5, 64.5], [242.5, 64.5], [90.5, 123.5], [242.5, 153.5], [71.5, 182.5]]
+  fid_centers_left_curr_2: [[352, 64.5], [523, 64.5], [351.5, 153.5], [504.5, 123.5], [523, 182.5]]
+  fid_bbox_size: 25
+
+device:
+  name: 'pixel4A'
+  camera_sensor_height: 5.6
+  camera_focal_length: 4.4
