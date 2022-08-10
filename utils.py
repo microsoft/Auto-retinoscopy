@@ -120,36 +120,6 @@ def track_bbox_in_video(params, video_path, tracking_object, tracker_type = 'CSR
 
 	return frame_indices, original_frames, bboxes
 
-# The function tracks user defined bbox in all the images for the given image directory
-def track_bbox_in_images(params, image_dir, tracking_object, tracker_type = 'CSRT'):
-	images_list = [img for img in sorted(os.listdir(image_dir)) if (img.endswith(".png"))]
-
-	original_frames = []
-	bboxes = []
-	frame_indices = []
-
-	initialization = False
-	scaling_factor = params['scaling_factor'] * 100
-
-	for image_name in images_list:
-		frame_idx = int(image_name.split('.')[0])
-		print ("Tracking: Current Frame: " + str(frame_idx))
-		frame = cv2.imread(os.path.join(image_dir, image_name))
-		frame = rescale_image(frame, percent = scaling_factor)
-		frame_original = frame.copy()
-
-		if not initialization:
-			bbox, tracker = initialize_bbox_tracker(params, frame, tracking_object, tracker_type)
-			initialization = True
-		else:
-			bbox, tracker = update_tracker(params, frame, tracker, tracker_type, tracking_object)
-
-		frame_indices.append(frame_idx)
-		original_frames.append(frame_original)
-		bboxes.append(bbox)
-	
-	return frame_indices, original_frames, bboxes
-
 # The function ask user to draw the bounding box and initializes the tracker for subsequent frames
 def initialize_bbox_tracker(params, frame, tracking_object, tracker_type):
 	if 'init_bbox' in params['input']:

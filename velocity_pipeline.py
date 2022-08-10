@@ -9,6 +9,7 @@ from fiducials import *
 from beam import *
 from eyes import *
 from utils import *
+from calculate_power import *
 
 if __name__ == '__main__':
 
@@ -30,6 +31,7 @@ if __name__ == '__main__':
 	video_name = params['input']['video']
 	video_path = os.path.join(input_dir, video_name)
 	output_dir = os.path.join(params['output']['directory_path'], video_name.split('.')[0])
+	output_csv_file = 'output_ref_error.csv'
 
 	resolution_model = initialize_super_resolution_model('fsrcnn', './FSRCNN_x4.pb', 4)
 	create_output_directory_structure(params, output_dir)
@@ -48,11 +50,7 @@ if __name__ == '__main__':
 		save_original_frames(params, video_path, original_frames_dir)
 
 	## Track the bounding box for the beam in the video	
-	if (params['input']['load_images_from_video']):
-		frame_indices, original_frames, crop_bboxes = track_bbox_in_video(params, video_path, tracking_object = "beam")
-	else:
-		input_frame_dir = os.path.join(output_dir, params['output_path']['original_frames'])	
-		frame_indices, original_frames, crop_bboxes = track_bbox_in_images(params, input_frame_dir, tracking_object = "beam")
+	frame_indices, original_frames, crop_bboxes = track_bbox_in_video(params, video_path, tracking_object = "beam")
 
 	## Run fiducial marker detection for localization
 	if (params['output']['run_glasses_detection']):
@@ -94,7 +92,7 @@ if __name__ == '__main__':
 		images_list = [img for img in sorted(os.listdir(input_frame_dir)) if (img.endswith(".png"))]
 
 		## Saving the selected frames with good reflex
-		selected_frames_dir = os.path.join(output_dir, params['output_path']['selected_frame'])
+		eyes_frames_dir = os.path.join(output_dir, params['output_path']['eyes_frames'])
 		scaling_factor = params['scaling_factor']
 
 		left_edge_reflex_list, right_edge_reflex_list, pupil_center_list, mean_pupil_intensity_list = [],[],[],[]
@@ -130,14 +128,6 @@ if __name__ == '__main__':
 				center_x_delta.append(pupil_x - fid0_x)
 				center_y_delta.append(pupil_y - fid0_y)
 				center_r.append(pupil_r)
-				try:
-					print ('Pupil Frame Selection:', idx, 'Fid', fid0_x, fid0_y, 'Pupil', pupil_x, pupil_y, pupil_r, center_x_delta[idx], center_y_delta[idx])
-				except IndexError:
-					print ('Pupil Frame Selection:','Index Error', idx, 'Fid', fid0_x, fid0_y, 'Pupil', pupil_x, pupil_y, pupil_r, len(center_x_delta), len(center_y_delta), len(right_edge_reflex_list))
-
-				pupil_image = cv2.circle(pupil_image, (int(pupil_x), int(pupil_y)), int(pupil_r), (255, 255, 255), 1)
-				pupil_image = cv2.circle(pupil_image, (int(fid0_x), int(fid0_y)), int(1), (255, 0,0), 1)
-				cv2.imwrite(selected_frames_dir + '/pupil_' + '{0:05}'.format(frame_indices[idx]) + '.jpg', pupil_image)		
 			
 			## No Pupil
 			else:
@@ -148,7 +138,7 @@ if __name__ == '__main__':
 				center_r.append(np.nan)
 
 		## Selecting the required frames from the pupil detections and saving the array
-		pupil_min_idx, pupil_max_idx, pupil_status = get_pupil_frame_indices(params, np.array(center_x_delta), np.array(center_y_delta), np.array(center_r), selected_frames_dir)
+		pupil_min_idx, pupil_max_idx, pupil_status = get_pupil_frame_indices(params, np.array(center_x_delta), np.array(center_y_delta), np.array(center_r), eyes_frames_dir)
 
 		## Performing reflex detection on the selected frames
 		for idx in range(len(frame_indices)):
@@ -272,3 +262,81 @@ if __name__ == '__main__':
 			np.save(numpy_output_dir + '/pupil_intensity',np.array(mean_pupil_intensity_list, dtype=object))
 			np.save(numpy_output_dir + '/pupil_min_idx',np.array(pupil_min_idx, dtype=object))
 			np.save(numpy_output_dir + '/pupil_max_idx',np.array(pupil_max_idx, dtype=object))
+
+	## Calculate final power from the detected fiducials, beam and reflex
+	if (params['output']['power_prediction']):
+		## Finding the offset of horizontal lines inside the pupil across which velocity of reflex is calculated
+		vertical_offset = get_pupil_lines_offset(params, warped_fid_centers, fid_type_list, pupil_center_list, pupil_min_idx, pupil_max_idx)
+
+		## Detect the timestamps for start and end frame for delta calculation
+		auto_start_frame, auto_end_frame = auto_frame_selection(params, warped_fid_centers, pupil_center_list, pupil_min_idx, pupil_max_idx, right_edge_reflex_list, left_edge_reflex_list)
+		print ("Start and End frames: ", auto_start_frame, auto_end_frame)
+
+		if (len(auto_start_frame) < params['power_calculation']['minimum_passes_reqd']):
+			print ("Neutralization case detected")
+			## Predict power according to the working distance
+			median_ratio = np.nan
+			median_working_dist = np.nanmedian(working_distance_list)/100
+			final_predicted_power = get_power_from_working_distance(params, median_working_dist)
+			
+		else:
+			ratio_reflex_beam = []
+			## Otherwise compute ratio of velocities and save it in a csv file
+			for line_idx, pupil_line_offset in enumerate(vertical_offset):
+				print ("POWER CALCULATION: Line ", line_idx, "started")
+
+				left_edge_beam_dist, right_edge_beam_dist, left_edge_reflex_dist,right_edge_reflex_dist = plot_graphs(params, frame_indices, warped_fid_centers, fid_type_list, left_edge_beam_list, right_edge_beam_list, left_edge_reflex_list, right_edge_reflex_list, pupil_center_list, pupil_line_offset, pupil_min_idx, pupil_max_idx)
+				final_data = selected_frame_data(auto_start_frame, auto_end_frame, left_edge_beam_dist, right_edge_beam_dist, left_edge_reflex_dist,right_edge_reflex_dist)
+
+				selected_csv_file_name = os.path.join(output_dir, 'selected_frame_data_auto.csv')
+				file_exists = os.path.exists(selected_csv_file_name)
+				if file_exists:
+					file_mode = "a"
+				else:
+					file_mode = "w"
+
+				## Dumping all the data in csv format for each line
+				with open(selected_csv_file_name, file_mode, newline='') as f:
+					writer = csv.writer(f)
+					if (file_exists == False):
+						writer.writerow(['Line Idx', 'L/R', 'Start Frame', 'Beam Left', 'Beam Right', 'Reflex left', 'Reflex Right', 'End Frame', 'Beam Left', 'Beam Right', 'Reflex left', 'Reflex Right', 'Beam delta', 'Reflex delta', 'Reflex/Beam'])
+					for row in final_data:
+						## Start Frame, LE beam, RE beam, LE reflex, RE reflex, End Frame, LE beam, RE beam, LE reflex, RE reflex
+						left_beam_delta = row[6] - row[1]
+						left_reflex_delta = row[8] - row[3]
+
+						right_beam_delta = row[7] - row[2]
+						right_reflex_delta = row[9] - row[4]
+						
+						beam_delta = np.nanmean([left_beam_delta, right_beam_delta])
+						left_edge_ratio = left_reflex_delta / beam_delta
+						right_edge_ratio = right_reflex_delta / beam_delta
+
+						if (abs(right_edge_ratio) > abs(left_edge_ratio)):
+							final_row = [line_idx, 'R'] + row + [right_beam_delta, right_reflex_delta, right_edge_ratio]
+							ratio_reflex_beam.append(right_edge_ratio)
+						else:
+							final_row = [line_idx, 'L'] + row + [left_beam_delta, left_reflex_delta, left_edge_ratio]
+							ratio_reflex_beam.append(left_edge_ratio)
+						writer.writerow(final_row)
+
+			## Predict power according to the median of the ratio
+			median_ratio = np.nanmedian(ratio_reflex_beam)
+			median_working_dist = np.nanmedian(working_distance_list)/100
+			final_predicted_power = get_power_from_ratio(params, median_ratio, median_working_dist)
+		print ('Estimated refractive power along scoped meridian: ', final_predicted_power, 'D')
+
+		## Saving the predicted refractive error in output csv file
+		file_exists = os.path.exists(output_csv_file)
+		if (file_exists):
+			print ("Appending data to the existing output file")
+			with open(output_csv_file, "a", newline='') as f:
+				writer = csv.writer(f)
+				writer.writerow([params['input']['video'], median_working_dist, median_ratio, final_predicted_power])
+		else:
+			print ("CSV file does not exists. Created new output file")
+			with open(output_csv_file, "w", newline='') as f:
+				writer = csv.writer(f)
+				writer.writerow(['Video_name', 'Working Distance', 'Reflex / Beam ratio', 'Predicted Refractive Error'])
+				writer.writerow([params['input']['video'], median_working_dist, median_ratio, final_predicted_power])
+

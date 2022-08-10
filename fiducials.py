@@ -189,7 +189,6 @@ def reorder_detected_fiducials_coords_wrt_lu(params, fid_markers, mean_fid_size,
 ## Finding the ordering and number of correctly detected fiducials given the Upper Right Fiducial
 ## Uses the known structure of the frame
 def reorder_detected_fiducials_coords_wrt_ru(params, fid_markers, mean_fid_size, current_fid, fid_pattern):
-	allowed_tol = params['glasses']['fiducials_distance_tolerance']
 	ordering = [[np.nan, np.nan, np.nan, np.nan]] * params['glasses']['number_of_fids']
 	ordering[1] = current_fid
 	detected = 1
@@ -254,8 +253,6 @@ def find_best_reordering(params, fid_markers, mean_fid_size, img_size):
 			left_upper = [fid_mar[0], fid_mar[1], fid_mar[2], fid_mar[3]]
 			best_dist = dist
 
-	print (fid_markers)
-	print (fid_pattern)
 	lu_ordering, lu_detections = reorder_detected_fiducials_coords_wrt_lu(params, fid_markers, mean_fid_size, left_upper, fid_pattern)
 	if (lu_detections == params['glasses']['number_of_fids']):
 		return lu_ordering, lu_detections

@@ -1,7 +1,5 @@
 input:
   directory_path: './input'
-  load_images_from_video: True
-  load_init_bbox_from_file: True
   init_bbox_file: 'init_bbox.csv'
 
 output_path:
@@ -11,7 +9,6 @@ output_path:
   eyes_frames: 'images/eyes'
   beam_frames: 'images/beam'
   glasses_frames: 'images/glasses'
-  selected_frame: 'images/selected_frames'
   numpy_path: 'numpy'
 
 output:
@@ -47,14 +44,24 @@ glasses:
   fiducials_extent: 0.75
   fiducials_aspect: 1.5
   fiducials_side: 4
-  fiducials_distance_tolerance: 0.2
   number_of_fids: 5
   fiducial_real_size_cm: 0.5
   fid_centers_right_curr_2: [[71.5, 64.5], [242.5, 64.5], [90.5, 123.5], [242.5, 153.5], [71.5, 182.5]]
   fid_centers_left_curr_2: [[352, 64.5], [523, 64.5], [351.5, 153.5], [504.5, 123.5], [523, 182.5]]
   fid_bbox_size: 25
 
+power_calculation:
+  minimum_passes_reqd: 1
+  number_lines: 8
+  pupil_vertical_allowed_range: 0.4
+  pupil_horizontal_allowed_range: 0.7
+  horizontal_line_width_reflex: 0.15
+  start_per1: 0.25
+  start_per2: 0.40
+  end_per1: 0.60
+  end_per2: 0.75
+  effective_light_distance: 0.4
+
 device:
-  name: 'pixel4A'
   camera_sensor_height: 5.6
   camera_focal_length: 4.4
