@@ -66,7 +66,7 @@ This command will load the default parameters from the *input_params.yaml* and s
 
 * `start_frame_index`: Starting frame in the video. Keep 0 by default
 * `end_frame_index`: Ending frame in the video. Keep -1 for processing entire video
-* `scaling_factor`: Default scaling factor: 1
+* `scaling_factor`: Default scaling factor: 1 [DEPRECATED]
 
 * `input`:
     * `directory_path`: path to the input directory
@@ -94,30 +94,30 @@ This command will load the default parameters from the *input_params.yaml* and s
 * `eyes`:
     * `scaling_factor`: Scaling factor for reflex detection. Default: 4.
     * `pupillary_margin`: Margin around detected pupil.
-    * `pupil_hough_param2_max_value`: Hough parameter for pupil detection.
-    * `pupil_hough_param2_min_value`: Hough parameter for pupil detection.
-    * `pupil_min_radius`: Minimum radius of pupil.
-    * `pupil_max_radius`: Maximum radius of pupil.
-    * `averaging_window`: Window size for gradient based reflex edge calculation.
-    * `histogram_bar_size`: Histogram width for finding center coordinates of pupil.
-    * `pupil_pass_separator`: Maximum number of allowed frames where pupil is not detected within the single pass.
-    * `median_pupil_radius_margin`: Allowed margin for pupil radius around median pupil radius.
-    * `reflex_vertical_column_percent`: Percentage of reflex along the column so that it is not considered part of specular reflex
+    * `pupil_hough_param2_max_value`: Hough parameter for pupil detection. [PUPIL_DETECTION]
+    * `pupil_hough_param2_min_value`: Hough parameter for pupil detection. [PUPIL_DETECTION]
+    * `pupil_min_radius`: Minimum radius of pupil. [PUPIL_DETECTION]
+    * `pupil_max_radius`: Maximum radius of pupil. [PUPIL_DETECTION]
+    * `averaging_window`: Window size for gradient based reflex edge calculation. [REFLEX_EDGE_AVERAGING]
+    * `histogram_bar_size`: Histogram width for finding center coordinates of pupil. [PUPIL_TIMESTAMP_DETECTION]
+    * `pupil_pass_separator`: Maximum number of allowed frames where pupil is not detected within the single pass. [PUPIL_DETECTION, DEPRECATED]
+    * `median_pupil_radius_margin`: Allowed margin for pupil radius around median pupil radius. [PUPIL_DETECTION]
+    * `reflex_vertical_column_percent`: Percentage of reflex along the column so that it is not considered part of specular reflex [SPECULAR_REFLEX_REMOVAL]
 
 * `glasses`:
-    * `square_tolerance`: Allowed tolerance for fiducial square
+    * `square_tolerance`: Allowed tolerance for fiducial square [SQUARE_DETECTION]
     * `fiducials_min_area`: Minimum area of detected fiducial
-    * `fiducials_extent`: Extent of detected contour with square
-    * `fiducials_aspect`: Allowed aspect ratio of detected contours to be called as square
-    * `fiducials_side`: Square fiducials, Default: 4
+    * `fiducials_extent`: Extent of detected contour with square. Controls squareness of detected quadrilaterals. [SQUARE_DETECTION]
+    * `fiducials_aspect`: Allowed aspect ratio of detected contours to be called as square. Controls squareness of detected quadrilaterals. [SQUARE_DETECTION]
+    * `fiducials_side`: Square fiducials, Default: 4 [DEPRECATED]
     * `number_of_fids`: Number of fiducials in the frame. For current pattern, its 5
     * `fiducial_real_size_cm`: Size of fiducial in real: 0.5 cm
-    * `fid_centers_right_curr_2`: List of centers of fiducial squares in the template image (Right eye)
-    * `fid_centers_left_curr_2`: List of centers of fiducial squares in the template image (Left eye)
-    * `fid_bbox_size`: Size of fiducials in template image (in pixels)
+    * `fid_centers_right_curr_2`: List of centers of fiducial squares in the template image (Right eye) [FITTING_PAPER_FRAME]
+    * `fid_centers_left_curr_2`: List of centers of fiducial squares in the template image (Left eye) [FITTING_PAPER_FRAME]
+    * `fid_bbox_size`: Size of fiducials in template image (in pixels) [HOMOGRAPHY_SCALE_RECOVERY]
 
 * `power_calculation`:
-    * `minimum_passes_reqd`: Minimum passes required for power calculation
+    * `minimum_passes_reqd`: Minimum passes required for power calculation [NEUTRALIZATION]
     * `number_lines`: Number of lines to scope within pupil
     * `pupil_vertical_allowed_range`: Allowed central region in the pupil for line plotting along the y-axis
     * `pupil_horizontal_allowed_range`: Allowed central region in the pupil for timestamp selection along the x-axis
