@@ -11,15 +11,15 @@ import yaml
 parser = argparse.ArgumentParser()	
 parser.add_argument("-v", "--video", help = "Input Video Name")
 parser.add_argument("-i", "--input_dir", help = "Path to input dir", default = "./input")
-parser.add_argument("-ft", "--frame_type", help = "Enter frame type as current", default = "current")
-parser.add_argument("-fs", "--frame_size", help = "Enter frame size specified on the frame nosepin (2,3)", default = "2")
+parser.add_argument("-ft", "--paper_frame_type", help = "Enter paper frame type as current", default = "current")
+parser.add_argument("-fs", "--paper_frame_size", help = "Enter paper frame size specified on the frame nosepin (2,3)", default = "2")
 
 # Read arguments from command line
 args = parser.parse_args()
 input_dir = args.input_dir
 video_name = args.video
-frame_type = args.frame_type
-frame_size = args.frame_size
+frame_type = args.paper_frame_type
+frame_size = args.paper_frame_size
 video_path = os.path.join(input_dir, video_name)
 
 scaling_factor = 4

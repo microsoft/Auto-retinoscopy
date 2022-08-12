@@ -38,7 +38,7 @@ The video analysis pipeline takes as input the video collected via a smartphone 
 
 ## Running Script
 
-`python annotate_init_bbox.py --input_dir <input_dir> --video <video_name.mp4> --frame_size 2`
+`python annotate_init_bbox.py --input_dir <input_dir> --video <video_name.mp4> --paper_frame_size 2`
 
 This command will prompt the user to draw a rough bounding box across the paper frame. The frame size and input bounding box will be saved in the *init_bbox.csv* file.
 
@@ -55,6 +55,7 @@ This command will load the default parameters from the *input_params.yaml* and s
 * `fiducials.py`: Detects the square fiducials in the input video.
 * `glasses.py` : Selects the type and size of paper frame design.
 * `utils.py`: Contains supporting utility functions for tracking, cropping, etc.
+* `calculate_power.py`: Contains the functions to calculate the net refractive power from the numpy arrays.
 
 ### Additional Modules
 
