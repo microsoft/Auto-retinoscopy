@@ -7,7 +7,7 @@ The aim of this README is to describe in detail the video analysis pipeline for 
 The figure below illustrates the (a) Proposed setup consisting of a retinoscope attached to a smartphone, (b) the setup from the patient’s viewpoint facing the logMAR chart, (c) retinoscope and its vergence sleeve, and (d) a single frame of the digital retinoscopy video with automatic detection of fiducials, pupil, reflex edges, and beam edges, using our video processing pipeline.
 
 <p align='center'>
-      <img src="./readme_images/summary.PNG" width="720" height="350" title="Overview">
+      <img src="./readme_images/summary.jpg" width="720" height="350" title="Overview">
 </p>
 
 ## Dependencies
